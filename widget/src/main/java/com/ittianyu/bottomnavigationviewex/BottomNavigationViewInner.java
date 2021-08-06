@@ -25,6 +25,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.internal.ThemeEnforcement;
 import com.google.android.material.navigation.NavigationBarItemView;
+import com.google.android.material.navigation.NavigationBarMenuView;
+import com.google.android.material.navigation.NavigationBarView;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
@@ -69,13 +71,19 @@ public class BottomNavigationViewInner extends BottomNavigationView {
     }
 
     public BottomNavigationViewInner(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        this(context, attrs, 0, 0);
+        this(context, attrs, defStyleAttr, 0);
     }
 
     public BottomNavigationViewInner(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
 
-        TintTypedArray attributes = ThemeEnforcement.obtainTintedStyledAttributes(context, attrs, R.styleable.BottomNavigationView, defStyleAttr, defStyleRes, new int[0]);
+        TintTypedArray attributes = ThemeEnforcement.obtainTintedStyledAttributes(
+                context,
+                attrs,
+                R.styleable.BottomNavigationView,
+                defStyleAttr,
+                defStyleRes,
+                new int[0]);
 
         // clear if you don't have set item icon tint list
         if (!attributes.hasValue(R.styleable.NavigationView_itemIconTint)) {
@@ -137,7 +145,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         NavigationBarItemView[] mButtons = getBottomNavigationItemViews();
         // 3. get mIcon in mButtons
         for (NavigationBarItemView button : mButtons) {
-            ImageView mIcon = getField(button.getClass(), button, "icon");
+            ImageView mIcon = getField(NavigationBarItemView.class, button, "icon");
             // 4. set mIcon visibility gone
             mIcon.setVisibility(visibility ? View.VISIBLE : View.INVISIBLE);
         }
@@ -153,7 +161,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
             // change mItemHeight
             NavigationBarItemView button = mButtons[0];
             if (null != button) {
-                final ImageView mIcon = getField(button.getClass(), button, "icon");
+                final ImageView mIcon = getField(NavigationBarItemView.class, button, "icon");
 //                System.out.println("mIcon.getMeasuredHeight():" + mIcon.getMeasuredHeight());
                 if (null != mIcon) {
                     mIcon.post(new Runnable() {
@@ -205,8 +213,8 @@ public class BottomNavigationViewInner extends BottomNavigationView {
 
         // 3. change field mShiftingMode value in mButtons
         for (NavigationBarItemView button : mButtons) {
-            TextView mLargeLabel = getField(button.getClass(), button, "largeLabel");
-            TextView mSmallLabel = getField(button.getClass(), button, "smallLabel");
+            TextView mLargeLabel = getField(NavigationBarItemView.class, button, "largeLabel");
+            TextView mSmallLabel = getField(NavigationBarItemView.class, button, "smallLabel");
 
             if (!visibility) {
                 // if not record the font size, record it
@@ -289,16 +297,16 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         NavigationBarItemView[] mButtons = getBottomNavigationItemViews();
         // 3. change field mShiftingMode value in mButtons
         for (NavigationBarItemView button : mButtons) {
-            TextView mLargeLabel = getField(button.getClass(), button, "largeLabel");
-            TextView mSmallLabel = getField(button.getClass(), button, "smallLabel");
+            TextView mLargeLabel = getField(NavigationBarItemView.class, button, "largeLabel");
+            TextView mSmallLabel = getField(NavigationBarItemView.class, button, "smallLabel");
 
             // if disable animation, need animationRecord the source value
             if (!enable) {
                 if (!animationRecord) {
                     animationRecord = true;
-                    mShiftAmount = getField(button.getClass(), button, "shiftAmount");
-                    mScaleUpFactor = getField(button.getClass(), button, "scaleUpFactor");
-                    mScaleDownFactor = getField(button.getClass(), button, "scaleDownFactor");
+                    mShiftAmount = getField(NavigationBarItemView.class, button, "shiftAmount");
+                    mScaleUpFactor = getField(NavigationBarItemView.class, button, "scaleUpFactor");
+                    mScaleDownFactor = getField(NavigationBarItemView.class, button, "scaleDownFactor");
 
                     mLargeLabelSize = mLargeLabel.getTextSize();
                     mSmallLabelSize = mSmallLabel.getTextSize();
@@ -308,9 +316,9 @@ public class BottomNavigationViewInner extends BottomNavigationView {
 //                            + " mLargeLabel:" + mLargeLabelSize + " mSmallLabel:" + mSmallLabelSize);
                 }
                 // disable
-                setField(button.getClass(), button, "shiftAmount", 0);
-                setField(button.getClass(), button, "scaleUpFactor", 1);
-                setField(button.getClass(), button, "scaleDownFactor", 1);
+                setField(NavigationBarItemView.class, button, "shiftAmount", 0);
+                setField(NavigationBarItemView.class, button, "scaleUpFactor", 1);
+                setField(NavigationBarItemView.class, button, "scaleDownFactor", 1);
 
                 // let the mLargeLabel font size equal to mSmallLabel
                 mLargeLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX, mSmallLabelSize);
@@ -325,9 +333,9 @@ public class BottomNavigationViewInner extends BottomNavigationView {
                 if (!animationRecord)
                     return this;
                 // enable animation
-                setField(button.getClass(), button, "shiftAmount", mShiftAmount);
-                setField(button.getClass(), button, "scaleUpFactor", mScaleUpFactor);
-                setField(button.getClass(), button, "scaleDownFactor", mScaleDownFactor);
+                setField(NavigationBarItemView.class, button, "shiftAmount", mShiftAmount);
+                setField(NavigationBarItemView.class, button, "scaleUpFactor", mScaleUpFactor);
+                setField(NavigationBarItemView.class, button, "scaleDownFactor", mScaleDownFactor);
                 // restore
                 mLargeLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX, mLargeLabelSize);
             }
@@ -356,7 +364,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
 //        setField(mMenuView.getClass(), mMenuView, "isShifting", enable);
 //        mMenuView.updateMenuView();
 
-        setLabelVisibilityMode(enable ? 0 : 1);
+        setLabelVisibilityMode(enable ? NavigationBarView.LABEL_VISIBILITY_SELECTED : NavigationBarView.LABEL_VISIBILITY_LABELED);
         return this;
     }
 
@@ -456,8 +464,8 @@ public class BottomNavigationViewInner extends BottomNavigationView {
      * @return
      */
     public OnNavigationItemSelectedListener getOnNavigationItemSelectedListener() {
-        // private OnNavigationItemSelectedListener mListener;
-        OnNavigationItemSelectedListener mListener = getField(BottomNavigationView.class, this, "selectedListener");
+        OnNavigationItemSelectedListener mListener = getField(NavigationBarView.class, this, "selectedListener");
+
         return mListener;
     }
 
@@ -508,7 +516,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          * 2 private BottomNavigationItemView[] mButtons;
          */
         BottomNavigationMenuView mMenuView = getBottomNavigationMenuView();
-        mButtons = getField(mMenuView.getClass().getSuperclass(), mMenuView, "buttons");
+        mButtons = getField(NavigationBarMenuView.class, mMenuView, "buttons");
         return mButtons;
     }
 
@@ -535,7 +543,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          * 3 private ImageView mIcon;
          */
         NavigationBarItemView mButtons = getBottomNavigationItemView(position);
-        ImageView mIcon = getField(BottomNavigationItemView.class, mButtons, "icon");
+        ImageView mIcon = getField(NavigationBarItemView.class, mButtons, "icon");
         return mIcon;
     }
 
@@ -553,7 +561,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          * 3 private final TextView mSmallLabel;
          */
         NavigationBarItemView mButtons = getBottomNavigationItemView(position);
-        TextView mSmallLabel = getField(BottomNavigationItemView.class, mButtons, "smallLabel");
+        TextView mSmallLabel = getField(NavigationBarItemView.class, mButtons, "smallLabel");
         return mSmallLabel;
     }
 
@@ -571,7 +579,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          * 3 private final TextView mLargeLabel;
          */
         NavigationBarItemView mButtons = getBottomNavigationItemView(position);
-        TextView mLargeLabel = getField(BottomNavigationItemView.class, mButtons, "largeLabel");
+        TextView mLargeLabel = getField(NavigationBarItemView.class, mButtons, "largeLabel");
         return mLargeLabel;
     }
 
@@ -689,7 +697,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         // 1. get mMenuView
         final BottomNavigationMenuView mMenuView = getBottomNavigationMenuView();
         // 2. get private final int mItemHeight in mMenuView
-        return getField(mMenuView.getClass(), mMenuView, "itemHeight");
+        return getField(BottomNavigationMenuView.class, mMenuView, "itemHeight");
     }
 
     /**
@@ -701,7 +709,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         // 1. get mMenuView
         final BottomNavigationMenuView mMenuView = getBottomNavigationMenuView();
         // 2. set private final int mItemHeight in mMenuView
-        setField(mMenuView.getClass(), mMenuView, "itemHeight", height);
+        setField(BottomNavigationMenuView.class, mMenuView, "itemHeight", height);
 
         mMenuView.updateMenuView();
         return this;
@@ -973,7 +981,5 @@ public class BottomNavigationViewInner extends BottomNavigationView {
 
             return true;
         }
-
     }
-
 }
