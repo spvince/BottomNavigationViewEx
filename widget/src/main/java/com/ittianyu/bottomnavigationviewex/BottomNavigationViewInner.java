@@ -5,12 +5,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.support.design.internal.BottomNavigationItemView;
-import android.support.design.internal.BottomNavigationMenuView;
-import android.support.design.internal.ThemeEnforcement;
-import android.support.design.widget.BottomNavigationView;
-import android.support.v4.view.ViewPager;
-import android.support.v7.widget.TintTypedArray;
 import android.util.AttributeSet;
 import android.util.SparseIntArray;
 import android.util.TypedValue;
@@ -21,6 +15,17 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.TintTypedArray;
+import androidx.viewpager.widget.ViewPager;
+
+import com.google.android.material.bottomnavigation.BottomNavigationItemView;
+import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.internal.ThemeEnforcement;
+import com.google.android.material.navigation.NavigationBarItemView;
+
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 
@@ -29,6 +34,9 @@ import java.lang.reflect.Field;
  */
 @SuppressLint("RestrictedApi")
 public class BottomNavigationViewInner extends BottomNavigationView {
+    // detect navigation tab changes when the user clicking on navigation item
+    private static boolean isNavigationItemClicking = false;
+
     // used for animation
     private float mShiftAmount;
     private float mScaleUpFactor;
@@ -47,32 +55,60 @@ public class BottomNavigationViewInner extends BottomNavigationView {
     private MyOnNavigationItemSelectedListener mMyOnNavigationItemSelectedListener;
     private BottomNavigationViewExOnPageChangeListener mPageChangeListener;
     private BottomNavigationMenuView mMenuView;
-    private BottomNavigationItemView[] mButtons;
     // used for setupWithViewPager end
 
-    // detect navigation tab changes when the user clicking on navigation item
-    private static boolean isNavigationItemClicking = false;
+    private NavigationBarItemView[] mButtons;
 
-    public BottomNavigationViewInner(Context context) {
-        this(context, null);
+
+    public BottomNavigationViewInner(@NonNull Context context) {
+        this(context, (AttributeSet) null);
     }
 
-    public BottomNavigationViewInner(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
+    public BottomNavigationViewInner(@NonNull Context context, @Nullable AttributeSet attrs) {
+        this(context, attrs, 0, 0);
     }
 
-    public BottomNavigationViewInner(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        TintTypedArray a = ThemeEnforcement.obtainTintedStyledAttributes(context, attrs,
-                android.support.design.R.styleable.BottomNavigationView,
-                defStyleAttr, android.support.design.R.style.Widget_Design_BottomNavigationView,
-                new int[]{android.support.design.R.styleable.BottomNavigationView_itemTextAppearanceInactive,
-                        android.support.design.R.styleable.BottomNavigationView_itemTextAppearanceActive});
+    public BottomNavigationViewInner(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        this(context, attrs, 0, 0);
+    }
+
+    public BottomNavigationViewInner(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+
+        TintTypedArray attributes = ThemeEnforcement.obtainTintedStyledAttributes(context, attrs, R.styleable.BottomNavigationView, defStyleAttr, defStyleRes, new int[0]);
+
         // clear if you don't have set item icon tint list
-        if (!a.hasValue(android.support.design.R.styleable.BottomNavigationView_itemIconTint)) {
+        if (!attributes.hasValue(R.styleable.NavigationView_itemIconTint)) {
             clearIconTintColor();
         }
-        a.recycle();
+
+        attributes.recycle();
+    }
+
+
+    /**
+     * get text height by font size
+     *
+     * @param fontSize
+     * @return
+     */
+    private static int getFontHeight(float fontSize) {
+        Paint paint = new Paint();
+        paint.setTextSize(fontSize);
+        Paint.FontMetrics fm = paint.getFontMetrics();
+        return (int) Math.ceil(fm.descent - fm.top) + 2;
+    }
+
+    /**
+     * dp to px
+     *
+     * @param context
+     * @param dpValue dp
+     * @return px
+     */
+    public static int dp2px(Context context, float dpValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5f);
     }
 
     /**
@@ -98,9 +134,9 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         // 1. get mMenuView
         final BottomNavigationMenuView mMenuView = getBottomNavigationMenuView();
         // 2. get mButtons
-        BottomNavigationItemView[] mButtons = getBottomNavigationItemViews();
+        NavigationBarItemView[] mButtons = getBottomNavigationItemViews();
         // 3. get mIcon in mButtons
-        for (BottomNavigationItemView button : mButtons) {
+        for (NavigationBarItemView button : mButtons) {
             ImageView mIcon = getField(button.getClass(), button, "icon");
             // 4. set mIcon visibility gone
             mIcon.setVisibility(visibility ? View.VISIBLE : View.INVISIBLE);
@@ -115,7 +151,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
             }
 
             // change mItemHeight
-            BottomNavigationItemView button = mButtons[0];
+            NavigationBarItemView button = mButtons[0];
             if (null != button) {
                 final ImageView mIcon = getField(button.getClass(), button, "icon");
 //                System.out.println("mIcon.getMeasuredHeight():" + mIcon.getMeasuredHeight());
@@ -165,10 +201,10 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         // 1. get mMenuView
         BottomNavigationMenuView mMenuView = getBottomNavigationMenuView();
         // 2. get mButtons
-        BottomNavigationItemView[] mButtons = getBottomNavigationItemViews();
+        NavigationBarItemView[] mButtons = getBottomNavigationItemViews();
 
         // 3. change field mShiftingMode value in mButtons
-        for (BottomNavigationItemView button : mButtons) {
+        for (NavigationBarItemView button : mButtons) {
             TextView mLargeLabel = getField(button.getClass(), button, "largeLabel");
             TextView mSmallLabel = getField(button.getClass(), button, "smallLabel");
 
@@ -223,19 +259,6 @@ public class BottomNavigationViewInner extends BottomNavigationView {
     }
 
     /**
-     * get text height by font size
-     *
-     * @param fontSize
-     * @return
-     */
-    private static int getFontHeight(float fontSize) {
-        Paint paint = new Paint();
-        paint.setTextSize(fontSize);
-        Paint.FontMetrics fm = paint.getFontMetrics();
-        return (int) Math.ceil(fm.descent - fm.top) + 2;
-    }
-
-    /**
      * enable or disable click item animation(text scale and icon move animation in no item shifting mode)
      *
      * @param enable It means the text won't scale and icon won't move when active it in no item shifting mode if false.
@@ -263,9 +286,9 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         // 1. get mMenuView
         BottomNavigationMenuView mMenuView = getBottomNavigationMenuView();
         // 2. get mButtons
-        BottomNavigationItemView[] mButtons = getBottomNavigationItemViews();
+        NavigationBarItemView[] mButtons = getBottomNavigationItemViews();
         // 3. change field mShiftingMode value in mButtons
-        for (BottomNavigationItemView button : mButtons) {
+        for (NavigationBarItemView button : mButtons) {
             TextView mLargeLabel = getField(button.getClass(), button, "largeLabel");
             TextView mSmallLabel = getField(button.getClass(), button, "smallLabel");
 
@@ -314,10 +337,9 @@ public class BottomNavigationViewInner extends BottomNavigationView {
     }
 
     /**
+     * @param enable It will has a shift animation if true. Otherwise all items are the same width.
      * @Deprecated use {@link #setLabelVisibilityMode }
      * enable the shifting mode for navigation
-     *
-     * @param enable It will has a shift animation if true. Otherwise all items are the same width.
      */
     @Deprecated
     public BottomNavigationViewInner enableShiftingMode(boolean enable) {
@@ -333,15 +355,15 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         // 2. change field mShiftingMode value in mMenuView
 //        setField(mMenuView.getClass(), mMenuView, "isShifting", enable);
 //        mMenuView.updateMenuView();
+
         setLabelVisibilityMode(enable ? 0 : 1);
         return this;
     }
 
     /**
+     * @param enable It will has a shift animation for item if true. Otherwise the item text always be shown.
      * @Deprecated use {@link #setItemHorizontalTranslationEnabled(boolean)}
      * enable the shifting mode for each item
-     *
-     * @param enable It will has a shift animation for item if true. Otherwise the item text always be shown.
      */
     @Deprecated
     public BottomNavigationViewInner enableItemShiftingMode(boolean enable) {
@@ -387,7 +409,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          */
 
         // 2. get mButtons
-        BottomNavigationItemView[] mButtons = getBottomNavigationItemViews();
+        NavigationBarItemView[] mButtons = getBottomNavigationItemViews();
         // 3. get menu and traverse it to get the checked one
         Menu menu = getMenu();
         for (int i = 0; i < mButtons.length; i++) {
@@ -396,6 +418,16 @@ public class BottomNavigationViewInner extends BottomNavigationView {
             }
         }
         return 0;
+    }
+
+    /**
+     * set the current checked item
+     *
+     * @param index start from 0.
+     */
+    public BottomNavigationViewInner setCurrentItem(int index) {
+        setSelectedItemId(getMenu().getItem(index).getItemId());
+        return this;
     }
 
     /**
@@ -416,16 +448,6 @@ public class BottomNavigationViewInner extends BottomNavigationView {
             }
         }
         return -1;
-    }
-
-    /**
-     * set the current checked item
-     *
-     * @param index start from 0.
-     */
-    public BottomNavigationViewInner setCurrentItem(int index) {
-        setSelectedItemId(getMenu().getItem(index).getItemId());
-        return this;
     }
 
     /**
@@ -456,27 +478,29 @@ public class BottomNavigationViewInner extends BottomNavigationView {
      * @return
      */
     public BottomNavigationMenuView getBottomNavigationMenuView() {
-        if (null == mMenuView)
-            mMenuView = getField(BottomNavigationView.class, this, "menuView");
+        if (null == mMenuView) {
+            mMenuView = ((BottomNavigationMenuView) this.getMenuView());
+        }
         return mMenuView;
     }
 
     /**
      * The lib has a default icon tint color. You can call this method to clear it if no need.
      * It usually used when you set two image for item.
+     *
      * @return
      */
     public BottomNavigationViewInner clearIconTintColor() {
         getBottomNavigationMenuView().setIconTintList(null);
         return this;
     }
-    
+
     /**
      * get private mButtons in mMenuView
      *
      * @return
      */
-    public BottomNavigationItemView[] getBottomNavigationItemViews() {
+    public NavigationBarItemView[] getBottomNavigationItemViews() {
         if (null != mButtons)
             return mButtons;
         /*
@@ -484,7 +508,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          * 2 private BottomNavigationItemView[] mButtons;
          */
         BottomNavigationMenuView mMenuView = getBottomNavigationMenuView();
-        mButtons = getField(mMenuView.getClass(), mMenuView, "buttons");
+        mButtons = getField(mMenuView.getClass().getSuperclass(), mMenuView, "buttons");
         return mButtons;
     }
 
@@ -495,7 +519,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
      * @return
      */
     public BottomNavigationItemView getBottomNavigationItemView(int position) {
-        return getBottomNavigationItemViews()[position];
+        return (BottomNavigationItemView) getBottomNavigationItemViews()[position];
     }
 
     /**
@@ -510,7 +534,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          * 2 private BottomNavigationItemView[] mButtons;
          * 3 private ImageView mIcon;
          */
-        BottomNavigationItemView mButtons = getBottomNavigationItemView(position);
+        NavigationBarItemView mButtons = getBottomNavigationItemView(position);
         ImageView mIcon = getField(BottomNavigationItemView.class, mButtons, "icon");
         return mIcon;
     }
@@ -528,7 +552,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          * 2 private BottomNavigationItemView[] mButtons;
          * 3 private final TextView mSmallLabel;
          */
-        BottomNavigationItemView mButtons = getBottomNavigationItemView(position);
+        NavigationBarItemView mButtons = getBottomNavigationItemView(position);
         TextView mSmallLabel = getField(BottomNavigationItemView.class, mButtons, "smallLabel");
         return mSmallLabel;
     }
@@ -546,7 +570,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          * 2 private BottomNavigationItemView[] mButtons;
          * 3 private final TextView mLargeLabel;
          */
-        BottomNavigationItemView mButtons = getBottomNavigationItemView(position);
+        NavigationBarItemView mButtons = getBottomNavigationItemView(position);
         TextView mLargeLabel = getField(BottomNavigationItemView.class, mButtons, "largeLabel");
         return mLargeLabel;
     }
@@ -557,7 +581,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
      * @return
      */
     public int getItemCount() {
-        BottomNavigationItemView[] bottomNavigationItemViews = getBottomNavigationItemViews();
+        NavigationBarItemView[] bottomNavigationItemViews = getBottomNavigationItemViews();
         if (null == bottomNavigationItemViews)
             return 0;
         return bottomNavigationItemViews.length;
@@ -649,25 +673,10 @@ public class BottomNavigationViewInner extends BottomNavigationView {
     /**
      * set all item ImageView size
      *
-     * @param dpSize  in dp
+     * @param dpSize in dp
      */
     public BottomNavigationViewInner setIconSize(float dpSize) {
-        setItemIconSize(dp2px(getContext(),dpSize));
-        return this;
-    }
-
-    /**
-     * set menu item height
-     *
-     * @param height in px
-     */
-    public BottomNavigationViewInner setItemHeight(int height) {
-        // 1. get mMenuView
-        final BottomNavigationMenuView mMenuView = getBottomNavigationMenuView();
-        // 2. set private final int mItemHeight in mMenuView
-        setField(mMenuView.getClass(), mMenuView, "itemHeight", height);
-
-        mMenuView.updateMenuView();
+        setItemIconSize(dp2px(getContext(), dpSize));
         return this;
     }
 
@@ -684,15 +693,18 @@ public class BottomNavigationViewInner extends BottomNavigationView {
     }
 
     /**
-     * dp to px
+     * set menu item height
      *
-     * @param context
-     * @param dpValue dp
-     * @return px
+     * @param height in px
      */
-    public static int dp2px(Context context, float dpValue) {
-        final float scale = context.getResources().getDisplayMetrics().density;
-        return (int) (dpValue * scale + 0.5f);
+    public BottomNavigationViewInner setItemHeight(int height) {
+        // 1. get mMenuView
+        final BottomNavigationMenuView mMenuView = getBottomNavigationMenuView();
+        // 2. set private final int mItemHeight in mMenuView
+        setField(mMenuView.getClass(), mMenuView, "itemHeight", height);
+
+        mMenuView.updateMenuView();
+        return this;
     }
 
     /**
@@ -816,6 +828,55 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         return this;
     }
 
+    public BottomNavigationViewInner enableShiftingMode(int position, boolean enable) {
+        getBottomNavigationItemView(position).setShifting(enable);
+        return this;
+    }
+
+    public BottomNavigationViewInner setItemBackground(int position, int background) {
+        getBottomNavigationItemView(position).setItemBackground(background);
+        return this;
+    }
+
+    public BottomNavigationViewInner setIconTintList(int position, ColorStateList tint) {
+        getBottomNavigationItemView(position).setIconTintList(tint);
+        return this;
+    }
+
+    public BottomNavigationViewInner setTextTintList(int position, ColorStateList tint) {
+        getBottomNavigationItemView(position).setTextColor(tint);
+        return this;
+    }
+
+    /**
+     * set margin top for all icons
+     *
+     * @param marginTop in px
+     */
+    public BottomNavigationViewInner setIconsMarginTop(int marginTop) {
+        for (int i = 0; i < getItemCount(); i++) {
+            setIconMarginTop(i, marginTop);
+        }
+        return this;
+    }
+
+    /**
+     * set margin top for icon
+     *
+     * @param position
+     * @param marginTop in px
+     */
+    public BottomNavigationViewInner setIconMarginTop(int position, int marginTop) {
+        /*
+        1. BottomNavigationItemView
+        2. private final int mDefaultMargin;
+         */
+        NavigationBarItemView itemView = getBottomNavigationItemView(position);
+        setField(BottomNavigationItemView.class, itemView, "defaultMargin", marginTop);
+        mMenuView.updateMenuView();
+        return this;
+    }
+
     /**
      * A {@link ViewPager.OnPageChangeListener} class which contains the
      * necessary calls back to the provided {@link BottomNavigationViewInner} so that the tab position is
@@ -855,10 +916,10 @@ public class BottomNavigationViewInner extends BottomNavigationView {
      * Decorate OnNavigationItemSelectedListener for setupWithViewPager
      */
     private static class MyOnNavigationItemSelectedListener implements OnNavigationItemSelectedListener {
-        private OnNavigationItemSelectedListener listener;
         private final WeakReference<ViewPager> viewPagerRef;
-        private boolean smoothScroll;
-        private SparseIntArray items;// used for change ViewPager selected item
+        private final boolean smoothScroll;
+        private final SparseIntArray items;// used for change ViewPager selected item
+        private OnNavigationItemSelectedListener listener;
         private int previousPosition = -1;
 
 
@@ -913,55 +974,6 @@ public class BottomNavigationViewInner extends BottomNavigationView {
             return true;
         }
 
-    }
-
-    public BottomNavigationViewInner enableShiftingMode(int position, boolean enable) {
-        getBottomNavigationItemView(position).setShifting(enable);
-        return this;
-    }
-
-    public BottomNavigationViewInner setItemBackground(int position, int background) {
-        getBottomNavigationItemView(position).setItemBackground(background);
-        return this;
-    }
-
-    public BottomNavigationViewInner setIconTintList(int position, ColorStateList tint) {
-        getBottomNavigationItemView(position).setIconTintList(tint);
-        return this;
-    }
-
-    public BottomNavigationViewInner setTextTintList(int position, ColorStateList tint) {
-        getBottomNavigationItemView(position).setTextColor(tint);
-        return this;
-    }
-
-    /**
-     * set margin top for all icons
-     *
-     * @param marginTop in px
-     */
-    public BottomNavigationViewInner setIconsMarginTop(int marginTop) {
-        for (int i = 0; i < getItemCount(); i++) {
-            setIconMarginTop(i, marginTop);
-        }
-        return this;
-    }
-
-    /**
-     * set margin top for icon
-     *
-     * @param position
-     * @param marginTop in px
-     */
-    public BottomNavigationViewInner setIconMarginTop(int position, int marginTop) {
-        /*
-        1. BottomNavigationItemView
-        2. private final int mDefaultMargin;
-         */
-        BottomNavigationItemView itemView = getBottomNavigationItemView(position);
-        setField(BottomNavigationItemView.class, itemView, "defaultMargin", marginTop);
-        mMenuView.updateMenuView();
-        return this;
     }
 
 }

@@ -3,13 +3,17 @@ package com.ittianyu.bottomnavigationviewex;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Typeface;
-import android.support.design.internal.BottomNavigationItemView;
-import android.support.design.internal.BottomNavigationMenuView;
-import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.viewpager.widget.ViewPager;
+
+import com.google.android.material.bottomnavigation.BottomNavigationItemView;
+import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarItemView;
 
 public class BottomNavigationViewEx extends BottomNavigationViewInner {
 
@@ -98,7 +102,7 @@ public class BottomNavigationViewEx extends BottomNavigationViewInner {
     }
 
     @Override
-    public OnNavigationItemSelectedListener getOnNavigationItemSelectedListener() {
+    public BottomNavigationView.OnNavigationItemSelectedListener getOnNavigationItemSelectedListener() {
         try {
             return super.getOnNavigationItemSelectedListener();
         } catch (Exception e) {
@@ -107,7 +111,7 @@ public class BottomNavigationViewEx extends BottomNavigationViewInner {
     }
 
     @Override
-    public void setOnNavigationItemSelectedListener(OnNavigationItemSelectedListener listener) {
+    public void setOnNavigationItemSelectedListener(BottomNavigationView.OnNavigationItemSelectedListener listener) {
         try {
             super.setOnNavigationItemSelectedListener(listener);
         } catch (Exception e) {
@@ -129,10 +133,11 @@ public class BottomNavigationViewEx extends BottomNavigationViewInner {
     }
 
     @Override
-    public BottomNavigationItemView[] getBottomNavigationItemViews() {
+    public NavigationBarItemView[] getBottomNavigationItemViews() {
         try {
             return super.getBottomNavigationItemViews();
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -142,6 +147,7 @@ public class BottomNavigationViewEx extends BottomNavigationViewInner {
         try {
             return super.getBottomNavigationItemView(position);
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
