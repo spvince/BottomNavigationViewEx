@@ -49,7 +49,6 @@ public class BottomNavigationViewInner extends BottomNavigationView {
     private boolean visibilityTextSizeRecord;
     private boolean visibilityHeightRecord;
     private int mItemHeight;
-    private boolean textVisibility = true;
     // used for animation end
 
     // used for setupWithViewPager
@@ -63,7 +62,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
 
 
     public BottomNavigationViewInner(@NonNull Context context) {
-        this(context, (AttributeSet) null);
+        this(context, null);
     }
 
     public BottomNavigationViewInner(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -80,14 +79,19 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         TintTypedArray attributes = ThemeEnforcement.obtainTintedStyledAttributes(
                 context,
                 attrs,
-                R.styleable.BottomNavigationView,
+                com.google.android.material.R.styleable.BottomNavigationView,
                 defStyleAttr,
-                defStyleRes,
-                new int[0]);
+                defStyleRes
+        );
 
         // clear if you don't have set item icon tint list
-        if (!attributes.hasValue(R.styleable.NavigationView_itemIconTint)) {
+        if (!attributes.hasValue(com.google.android.material.R.styleable.NavigationView_itemIconTint)) {
             clearIconTintColor();
+        }
+
+        if (attributes.hasValue(com.google.android.material.R.styleable.BottomNavigationView_android_minHeight)) {
+            setMinimumHeight(
+                    attributes.getDimensionPixelSize(com.google.android.material.R.styleable.BottomNavigationView_android_minHeight, 0));
         }
 
         attributes.recycle();
@@ -164,12 +168,9 @@ public class BottomNavigationViewInner extends BottomNavigationView {
                 final ImageView mIcon = getField(NavigationBarItemView.class, button, "icon");
 //                System.out.println("mIcon.getMeasuredHeight():" + mIcon.getMeasuredHeight());
                 if (null != mIcon) {
-                    mIcon.post(new Runnable() {
-                        @Override
-                        public void run() {
+                    mIcon.post(() -> {
 //                            System.out.println("mIcon.getMeasuredHeight():" + mIcon.getMeasuredHeight());
-                            setItemHeight(mItemHeight - mIcon.getMeasuredHeight());
-                        }
+                        setItemHeight(mItemHeight - mIcon.getMeasuredHeight());
                     });
                 }
             }
@@ -192,7 +193,6 @@ public class BottomNavigationViewInner extends BottomNavigationView {
      * @param visibility
      */
     public BottomNavigationViewInner setTextVisibility(boolean visibility) {
-        this.textVisibility = visibility;
         /*
         1. get field in this class
         private final BottomNavigationMenuView mMenuView;
@@ -463,17 +463,15 @@ public class BottomNavigationViewInner extends BottomNavigationView {
      *
      * @return
      */
-    public OnNavigationItemSelectedListener getOnNavigationItemSelectedListener() {
-        OnNavigationItemSelectedListener mListener = getField(NavigationBarView.class, this, "selectedListener");
-
-        return mListener;
+    public OnItemSelectedListener getOnNavigationItemSelectedListener() {
+        return getField(NavigationBarView.class, this, "selectedListener");
     }
 
     @Override
-    public void setOnNavigationItemSelectedListener(OnNavigationItemSelectedListener listener) {
+    public void setOnItemSelectedListener(@Nullable OnItemSelectedListener listener) {
         // if not set up with view pager, the same with father
         if (null == mMyOnNavigationItemSelectedListener) {
-            super.setOnNavigationItemSelectedListener(listener);
+            super.setOnItemSelectedListener(listener);
             return;
         }
 
@@ -543,8 +541,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          * 3 private ImageView mIcon;
          */
         NavigationBarItemView mButtons = getBottomNavigationItemView(position);
-        ImageView mIcon = getField(NavigationBarItemView.class, mButtons, "icon");
-        return mIcon;
+        return getField(NavigationBarItemView.class, mButtons, "icon");
     }
 
     /**
@@ -561,8 +558,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          * 3 private final TextView mSmallLabel;
          */
         NavigationBarItemView mButtons = getBottomNavigationItemView(position);
-        TextView mSmallLabel = getField(NavigationBarItemView.class, mButtons, "smallLabel");
-        return mSmallLabel;
+        return getField(NavigationBarItemView.class, mButtons, "smallLabel");
     }
 
     /**
@@ -579,8 +575,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          * 3 private final TextView mLargeLabel;
          */
         NavigationBarItemView mButtons = getBottomNavigationItemView(position);
-        TextView mLargeLabel = getField(NavigationBarItemView.class, mButtons, "largeLabel");
-        return mLargeLabel;
+        return getField(NavigationBarItemView.class, mButtons, "largeLabel");
     }
 
     /**
@@ -830,9 +825,9 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         viewPager.addOnPageChangeListener(mPageChangeListener);
 
         // Now we'll add a navigation item selected listener to set ViewPager's current item
-        OnNavigationItemSelectedListener listener = getOnNavigationItemSelectedListener();
+        OnItemSelectedListener listener = getOnNavigationItemSelectedListener();
         mMyOnNavigationItemSelectedListener = new MyOnNavigationItemSelectedListener(viewPager, this, smoothScroll, listener);
-        super.setOnNavigationItemSelectedListener(mMyOnNavigationItemSelectedListener);
+        super.setOnItemSelectedListener(mMyOnNavigationItemSelectedListener);
         return this;
     }
 
@@ -923,15 +918,15 @@ public class BottomNavigationViewInner extends BottomNavigationView {
     /**
      * Decorate OnNavigationItemSelectedListener for setupWithViewPager
      */
-    private static class MyOnNavigationItemSelectedListener implements OnNavigationItemSelectedListener {
+    private static class MyOnNavigationItemSelectedListener implements OnItemSelectedListener {
         private final WeakReference<ViewPager> viewPagerRef;
         private final boolean smoothScroll;
         private final SparseIntArray items;// used for change ViewPager selected item
-        private OnNavigationItemSelectedListener listener;
+        private OnItemSelectedListener listener;
         private int previousPosition = -1;
 
 
-        MyOnNavigationItemSelectedListener(ViewPager viewPager, BottomNavigationViewInner bnve, boolean smoothScroll, OnNavigationItemSelectedListener listener) {
+        MyOnNavigationItemSelectedListener(ViewPager viewPager, BottomNavigationViewInner bnve, boolean smoothScroll, OnItemSelectedListener listener) {
             this.viewPagerRef = new WeakReference<>(viewPager);
             this.listener = listener;
             this.smoothScroll = smoothScroll;
@@ -946,7 +941,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
             }
         }
 
-        public void setOnNavigationItemSelectedListener(OnNavigationItemSelectedListener listener) {
+        public void setOnNavigationItemSelectedListener(OnItemSelectedListener listener) {
             this.listener = listener;
         }
 

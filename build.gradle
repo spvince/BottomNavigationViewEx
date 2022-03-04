@@ -2,12 +2,12 @@
 
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
         google()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.3'
+        classpath 'com.android.tools.build:gradle:7.0.4'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -19,6 +19,8 @@ allprojects {
     repositories {
         maven { url 'https://jitpack.io' }
         google()
+        mavenCentral()
+        //noinspection JcenterRepositoryObsolete
         jcenter()
     }
 }
@@ -28,16 +30,16 @@ task clean(type: Delete) {
 }
 
 ext {
-    targetSdkVersion = 30
-    buildToolsVersion = '30.0.2'
-    compileSdkVersion = 30
+    targetSdkVersion = 31
+    buildToolsVersion = '30.0.3'
+    compileSdkVersion = 31
 
     // Libraries
-    appcompat = '1.3.1'
-    design = '1.4.0'
+    appcompat = '1.4.1'
+    design = '1.5.0'
 
     // Libraries - test
     junit = '1.1.3'
-    testRunner = '1.4.0'
+    testRunner = '1.5.0'
     espressoCore = '3.4.0'
 }

@@ -102,7 +102,7 @@ public class BottomNavigationViewEx extends BottomNavigationViewInner {
     }
 
     @Override
-    public BottomNavigationView.OnNavigationItemSelectedListener getOnNavigationItemSelectedListener() {
+    public BottomNavigationView.OnItemSelectedListener getOnNavigationItemSelectedListener() {
         try {
             return super.getOnNavigationItemSelectedListener();
         } catch (Exception e) {
@@ -111,9 +111,9 @@ public class BottomNavigationViewEx extends BottomNavigationViewInner {
     }
 
     @Override
-    public void setOnNavigationItemSelectedListener(BottomNavigationView.OnNavigationItemSelectedListener listener) {
+    public void setOnItemSelectedListener(BottomNavigationView.OnItemSelectedListener listener) {
         try {
-            super.setOnNavigationItemSelectedListener(listener);
+            super.setOnItemSelectedListener(listener);
         } catch (Exception e) {
         }
     }

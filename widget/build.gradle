@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
 
 group = 'com.github.ittianyu'
 
@@ -48,20 +47,8 @@ task sourcesJar(type: Jar) {
     classifier = 'sources'
 }
 
-task javadoc(type: Javadoc) {
-    failOnError false
-    source = android.sourceSets.main.java.sourceFiles
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    classpath += configurations.compile
-}
 
-// 制作文档(Javadoc)
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
 
 artifacts {
     archives sourcesJar
-    archives javadocJar
 }
