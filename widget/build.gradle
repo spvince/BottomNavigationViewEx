@@ -60,11 +60,16 @@ afterEvaluate {
         }
 
         repositories {
-            mavenLocal()                    // nécessaire pour JitPack
+            mavenLocal()
             maven {
-                name = "localBuild"        // optionnel, pour tests locaux
+                name = "localBuild"
                 url = uri("${buildDir}/repo")
             }
         }
+    }
+
+    // ⚡ Fix implicit dependency Gradle 8+
+    tasks.named("publishReleasePublicationToMavenLocal") {
+        dependsOn("bundleReleaseAar")
     }
 }
