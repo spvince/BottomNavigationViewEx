@@ -33,7 +33,7 @@ ext {
     design = '1.13.0'
 
     // Test libraries
-    junit = '1.1.3'
-    testRunner = '1.5.0'
+    junit = '1.3.0'
+    testRunner = '1.7.0'
     espressoCore = '3.4.0'
 }

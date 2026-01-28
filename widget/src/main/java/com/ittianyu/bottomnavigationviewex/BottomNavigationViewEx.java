@@ -1,5 +1,6 @@
 package com.ittianyu.bottomnavigationviewex;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Typeface;
@@ -15,6 +16,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarMenuItemView;
 
+@SuppressLint("RestrictedApi")
 public class BottomNavigationViewEx extends BottomNavigationViewInner {
 
     public BottomNavigationViewEx(Context context) {
