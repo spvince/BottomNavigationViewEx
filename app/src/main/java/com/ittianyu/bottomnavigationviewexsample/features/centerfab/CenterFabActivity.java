@@ -1,18 +1,18 @@
 package com.ittianyu.bottomnavigationviewexsample.features.centerfab;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.databinding.DataBindingUtil;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.viewpager.widget.ViewPager;
-
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.ittianyu.bottomnavigationviewexsample.R;
@@ -106,25 +106,25 @@ public class CenterFabActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 int position = 0;
                 switch (item.getItemId()) {
-                    case R.id.i_music:
+                    case  1000009:
                         position = 0;
                         break;
-                    case R.id.i_backup:
+                    case 1000013:
                         position = 1;
                         break;
-                    case R.id.i_favor:
+                    case 1000041:
                         position = 2;
                         break;
-                    case R.id.i_visibility:
+                    case 1000020:
                         position = 3;
                         break;
-                    case R.id.i_empty: {
+                    case 1000039: {
                         return false;
                     }
                 }
-                if(previousPosition != position) {
-                  bind.vp.setCurrentItem(position, false);
-                  previousPosition = position;
+                if (previousPosition != position) {
+                    bind.vp.setCurrentItem(position, false);
+                    previousPosition = position;
                     Log.i(TAG, "-----bnve-------- previous item:" + bind.bnve.getCurrentItem() + " current item:" + position + " ------------------");
                 }
 

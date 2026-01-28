@@ -1,6 +1,5 @@
 package com.ittianyu.bottomnavigationviewexsample.features.badgeview;
 
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.widget.Toast;
 

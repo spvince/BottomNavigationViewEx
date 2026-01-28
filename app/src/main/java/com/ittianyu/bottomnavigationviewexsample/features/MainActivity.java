@@ -1,11 +1,11 @@
 package com.ittianyu.bottomnavigationviewexsample.features;
 
 import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
-import android.os.Bundle;
-import android.view.View;
 
 import com.ittianyu.bottomnavigationviewexsample.R;
 import com.ittianyu.bottomnavigationviewexsample.databinding.ActivityMainBinding;
@@ -38,23 +38,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.btn_style:
-                startActivity(new Intent(this, StyleActivity.class));
-                break;
-            case R.id.btn_with_view_pager:
-                startActivity(new Intent(this, WithViewPagerActivity.class));
-                break;
-            case R.id.btn_setup_with_view_pager:
-                startActivity(new Intent(this, SetupWithViewPagerActivity.class));
-                break;
-            case R.id.btn_badge_view:
-                startActivity(new Intent(this, BadgeViewActivity.class));
-                break;
-            case R.id.btn_center_fab:
-                startActivity(new Intent(this, CenterFabActivity.class));
-                break;
-
-        }
+        startActivity(new Intent(this, BadgeViewActivity.class));
+//        switch (view.getId()) {
+//            case 1000001:
+//                startActivity(new Intent(this, StyleActivity.class));
+//                break;
+//            case 1000012:
+//                startActivity(new Intent(this, WithViewPagerActivity.class));
+//                break;
+//            case 1000042:
+//                startActivity(new Intent(this, SetupWithViewPagerActivity.class));
+//                break;
+//            case 1000025:
+//                startActivity(new Intent(this, BadgeViewActivity.class));
+//                break;
+//            case 1000023:
+//                startActivity(new Intent(this, CenterFabActivity.class));
+//                break;
+//
+//        }
     }
 }
