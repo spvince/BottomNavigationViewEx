@@ -24,7 +24,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationItemView;
 import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.internal.ThemeEnforcement;
-import com.google.android.material.navigation.NavigationBarItemView;
+import com.google.android.material.navigation.NavigationBarMenuItemView;
 import com.google.android.material.navigation.NavigationBarMenuView;
 import com.google.android.material.navigation.NavigationBarView;
 
@@ -49,7 +49,6 @@ public class BottomNavigationViewInner extends BottomNavigationView {
     private boolean visibilityTextSizeRecord;
     private boolean visibilityHeightRecord;
     private int mItemHeight;
-    private boolean textVisibility = true;
     // used for animation end
 
     // used for setupWithViewPager
@@ -59,11 +58,11 @@ public class BottomNavigationViewInner extends BottomNavigationView {
     private BottomNavigationMenuView mMenuView;
     // used for setupWithViewPager end
 
-    private NavigationBarItemView[] mButtons;
+    private NavigationBarMenuItemView[] mButtons;
 
 
     public BottomNavigationViewInner(@NonNull Context context) {
-        this(context, (AttributeSet) null);
+        this(context, null);
     }
 
     public BottomNavigationViewInner(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -80,14 +79,19 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         TintTypedArray attributes = ThemeEnforcement.obtainTintedStyledAttributes(
                 context,
                 attrs,
-                R.styleable.BottomNavigationView,
+                com.google.android.material.R.styleable.BottomNavigationView,
                 defStyleAttr,
-                defStyleRes,
-                new int[0]);
+                defStyleRes
+        );
 
         // clear if you don't have set item icon tint list
-        if (!attributes.hasValue(R.styleable.NavigationView_itemIconTint)) {
+        if (!attributes.hasValue(com.google.android.material.R.styleable.NavigationView_itemIconTint)) {
             clearIconTintColor();
+        }
+
+        if (attributes.hasValue(com.google.android.material.R.styleable.BottomNavigationView_android_minHeight)) {
+            setMinimumHeight(
+                    attributes.getDimensionPixelSize(com.google.android.material.R.styleable.BottomNavigationView_android_minHeight, 0));
         }
 
         attributes.recycle();
@@ -142,10 +146,10 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         // 1. get mMenuView
         final BottomNavigationMenuView mMenuView = getBottomNavigationMenuView();
         // 2. get mButtons
-        NavigationBarItemView[] mButtons = getBottomNavigationItemViews();
+        NavigationBarMenuItemView[] mButtons = getBottomNavigationItemViews();
         // 3. get mIcon in mButtons
-        for (NavigationBarItemView button : mButtons) {
-            ImageView mIcon = getField(NavigationBarItemView.class, button, "icon");
+        for (NavigationBarMenuItemView button : mButtons) {
+            ImageView mIcon = getField(NavigationBarMenuItemView.class, button, "icon");
             // 4. set mIcon visibility gone
             mIcon.setVisibility(visibility ? View.VISIBLE : View.INVISIBLE);
         }
@@ -159,17 +163,14 @@ public class BottomNavigationViewInner extends BottomNavigationView {
             }
 
             // change mItemHeight
-            NavigationBarItemView button = mButtons[0];
+            NavigationBarMenuItemView button = mButtons[0];
             if (null != button) {
-                final ImageView mIcon = getField(NavigationBarItemView.class, button, "icon");
+                final ImageView mIcon = getField(NavigationBarMenuItemView.class, button, "icon");
 //                System.out.println("mIcon.getMeasuredHeight():" + mIcon.getMeasuredHeight());
                 if (null != mIcon) {
-                    mIcon.post(new Runnable() {
-                        @Override
-                        public void run() {
+                    mIcon.post(() -> {
 //                            System.out.println("mIcon.getMeasuredHeight():" + mIcon.getMeasuredHeight());
-                            setItemHeight(mItemHeight - mIcon.getMeasuredHeight());
-                        }
+                        setItemHeight(mItemHeight - mIcon.getMeasuredHeight());
                     });
                 }
             }
@@ -192,7 +193,6 @@ public class BottomNavigationViewInner extends BottomNavigationView {
      * @param visibility
      */
     public BottomNavigationViewInner setTextVisibility(boolean visibility) {
-        this.textVisibility = visibility;
         /*
         1. get field in this class
         private final BottomNavigationMenuView mMenuView;
@@ -209,12 +209,12 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         // 1. get mMenuView
         BottomNavigationMenuView mMenuView = getBottomNavigationMenuView();
         // 2. get mButtons
-        NavigationBarItemView[] mButtons = getBottomNavigationItemViews();
+        NavigationBarMenuItemView[] mButtons = getBottomNavigationItemViews();
 
         // 3. change field mShiftingMode value in mButtons
-        for (NavigationBarItemView button : mButtons) {
-            TextView mLargeLabel = getField(NavigationBarItemView.class, button, "largeLabel");
-            TextView mSmallLabel = getField(NavigationBarItemView.class, button, "smallLabel");
+        for (NavigationBarMenuItemView button : mButtons) {
+            TextView mLargeLabel = getField(NavigationBarMenuItemView.class, button, "largeLabel");
+            TextView mSmallLabel = getField(NavigationBarMenuItemView.class, button, "smallLabel");
 
             if (!visibility) {
                 // if not record the font size, record it
@@ -294,19 +294,19 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         // 1. get mMenuView
         BottomNavigationMenuView mMenuView = getBottomNavigationMenuView();
         // 2. get mButtons
-        NavigationBarItemView[] mButtons = getBottomNavigationItemViews();
+        NavigationBarMenuItemView[] mButtons = getBottomNavigationItemViews();
         // 3. change field mShiftingMode value in mButtons
-        for (NavigationBarItemView button : mButtons) {
-            TextView mLargeLabel = getField(NavigationBarItemView.class, button, "largeLabel");
-            TextView mSmallLabel = getField(NavigationBarItemView.class, button, "smallLabel");
+        for (NavigationBarMenuItemView button : mButtons) {
+            TextView mLargeLabel = getField(NavigationBarMenuItemView.class, button, "largeLabel");
+            TextView mSmallLabel = getField(NavigationBarMenuItemView.class, button, "smallLabel");
 
             // if disable animation, need animationRecord the source value
             if (!enable) {
                 if (!animationRecord) {
                     animationRecord = true;
-                    mShiftAmount = getField(NavigationBarItemView.class, button, "shiftAmount");
-                    mScaleUpFactor = getField(NavigationBarItemView.class, button, "scaleUpFactor");
-                    mScaleDownFactor = getField(NavigationBarItemView.class, button, "scaleDownFactor");
+                    mShiftAmount = getField(NavigationBarMenuItemView.class, button, "shiftAmount");
+                    mScaleUpFactor = getField(NavigationBarMenuItemView.class, button, "scaleUpFactor");
+                    mScaleDownFactor = getField(NavigationBarMenuItemView.class, button, "scaleDownFactor");
 
                     mLargeLabelSize = mLargeLabel.getTextSize();
                     mSmallLabelSize = mSmallLabel.getTextSize();
@@ -316,9 +316,9 @@ public class BottomNavigationViewInner extends BottomNavigationView {
 //                            + " mLargeLabel:" + mLargeLabelSize + " mSmallLabel:" + mSmallLabelSize);
                 }
                 // disable
-                setField(NavigationBarItemView.class, button, "shiftAmount", 0);
-                setField(NavigationBarItemView.class, button, "scaleUpFactor", 1);
-                setField(NavigationBarItemView.class, button, "scaleDownFactor", 1);
+                setField(NavigationBarMenuItemView.class, button, "shiftAmount", 0);
+                setField(NavigationBarMenuItemView.class, button, "scaleUpFactor", 1);
+                setField(NavigationBarMenuItemView.class, button, "scaleDownFactor", 1);
 
                 // let the mLargeLabel font size equal to mSmallLabel
                 mLargeLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX, mSmallLabelSize);
@@ -333,9 +333,9 @@ public class BottomNavigationViewInner extends BottomNavigationView {
                 if (!animationRecord)
                     return this;
                 // enable animation
-                setField(NavigationBarItemView.class, button, "shiftAmount", mShiftAmount);
-                setField(NavigationBarItemView.class, button, "scaleUpFactor", mScaleUpFactor);
-                setField(NavigationBarItemView.class, button, "scaleDownFactor", mScaleDownFactor);
+                setField(NavigationBarMenuItemView.class, button, "shiftAmount", mShiftAmount);
+                setField(NavigationBarMenuItemView.class, button, "scaleUpFactor", mScaleUpFactor);
+                setField(NavigationBarMenuItemView.class, button, "scaleDownFactor", mScaleDownFactor);
                 // restore
                 mLargeLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX, mLargeLabelSize);
             }
@@ -417,7 +417,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          */
 
         // 2. get mButtons
-        NavigationBarItemView[] mButtons = getBottomNavigationItemViews();
+        NavigationBarMenuItemView[] mButtons = getBottomNavigationItemViews();
         // 3. get menu and traverse it to get the checked one
         Menu menu = getMenu();
         for (int i = 0; i < mButtons.length; i++) {
@@ -463,17 +463,15 @@ public class BottomNavigationViewInner extends BottomNavigationView {
      *
      * @return
      */
-    public OnNavigationItemSelectedListener getOnNavigationItemSelectedListener() {
-        OnNavigationItemSelectedListener mListener = getField(NavigationBarView.class, this, "selectedListener");
-
-        return mListener;
+    public OnItemSelectedListener getOnNavigationItemSelectedListener() {
+        return getField(NavigationBarView.class, this, "selectedListener");
     }
 
     @Override
-    public void setOnNavigationItemSelectedListener(OnNavigationItemSelectedListener listener) {
+    public void setOnItemSelectedListener(@Nullable OnItemSelectedListener listener) {
         // if not set up with view pager, the same with father
         if (null == mMyOnNavigationItemSelectedListener) {
-            super.setOnNavigationItemSelectedListener(listener);
+            super.setOnItemSelectedListener(listener);
             return;
         }
 
@@ -508,7 +506,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
      *
      * @return
      */
-    public NavigationBarItemView[] getBottomNavigationItemViews() {
+    public NavigationBarMenuItemView[] getBottomNavigationItemViews() {
         if (null != mButtons)
             return mButtons;
         /*
@@ -542,9 +540,8 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          * 2 private BottomNavigationItemView[] mButtons;
          * 3 private ImageView mIcon;
          */
-        NavigationBarItemView mButtons = getBottomNavigationItemView(position);
-        ImageView mIcon = getField(NavigationBarItemView.class, mButtons, "icon");
-        return mIcon;
+        NavigationBarMenuItemView mButtons = getBottomNavigationItemView(position);
+        return getField(NavigationBarMenuItemView.class, mButtons, "icon");
     }
 
     /**
@@ -560,9 +557,8 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          * 2 private BottomNavigationItemView[] mButtons;
          * 3 private final TextView mSmallLabel;
          */
-        NavigationBarItemView mButtons = getBottomNavigationItemView(position);
-        TextView mSmallLabel = getField(NavigationBarItemView.class, mButtons, "smallLabel");
-        return mSmallLabel;
+        NavigationBarMenuItemView mButtons = getBottomNavigationItemView(position);
+        return getField(NavigationBarMenuItemView.class, mButtons, "smallLabel");
     }
 
     /**
@@ -578,9 +574,8 @@ public class BottomNavigationViewInner extends BottomNavigationView {
          * 2 private BottomNavigationItemView[] mButtons;
          * 3 private final TextView mLargeLabel;
          */
-        NavigationBarItemView mButtons = getBottomNavigationItemView(position);
-        TextView mLargeLabel = getField(NavigationBarItemView.class, mButtons, "largeLabel");
-        return mLargeLabel;
+        NavigationBarMenuItemView mButtons = getBottomNavigationItemView(position);
+        return getField(NavigationBarMenuItemView.class, mButtons, "largeLabel");
     }
 
     /**
@@ -589,7 +584,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
      * @return
      */
     public int getItemCount() {
-        NavigationBarItemView[] bottomNavigationItemViews = getBottomNavigationItemViews();
+        NavigationBarMenuItemView[] bottomNavigationItemViews = getBottomNavigationItemViews();
         if (null == bottomNavigationItemViews)
             return 0;
         return bottomNavigationItemViews.length;
@@ -830,9 +825,9 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         viewPager.addOnPageChangeListener(mPageChangeListener);
 
         // Now we'll add a navigation item selected listener to set ViewPager's current item
-        OnNavigationItemSelectedListener listener = getOnNavigationItemSelectedListener();
+        OnItemSelectedListener listener = getOnNavigationItemSelectedListener();
         mMyOnNavigationItemSelectedListener = new MyOnNavigationItemSelectedListener(viewPager, this, smoothScroll, listener);
-        super.setOnNavigationItemSelectedListener(mMyOnNavigationItemSelectedListener);
+        super.setOnItemSelectedListener(mMyOnNavigationItemSelectedListener);
         return this;
     }
 
@@ -879,7 +874,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
         1. BottomNavigationItemView
         2. private final int mDefaultMargin;
          */
-        NavigationBarItemView itemView = getBottomNavigationItemView(position);
+        NavigationBarMenuItemView itemView = getBottomNavigationItemView(position);
         setField(BottomNavigationItemView.class, itemView, "defaultMargin", marginTop);
         mMenuView.updateMenuView();
         return this;
@@ -923,15 +918,15 @@ public class BottomNavigationViewInner extends BottomNavigationView {
     /**
      * Decorate OnNavigationItemSelectedListener for setupWithViewPager
      */
-    private static class MyOnNavigationItemSelectedListener implements OnNavigationItemSelectedListener {
+    private static class MyOnNavigationItemSelectedListener implements OnItemSelectedListener {
         private final WeakReference<ViewPager> viewPagerRef;
         private final boolean smoothScroll;
         private final SparseIntArray items;// used for change ViewPager selected item
-        private OnNavigationItemSelectedListener listener;
+        private OnItemSelectedListener listener;
         private int previousPosition = -1;
 
 
-        MyOnNavigationItemSelectedListener(ViewPager viewPager, BottomNavigationViewInner bnve, boolean smoothScroll, OnNavigationItemSelectedListener listener) {
+        MyOnNavigationItemSelectedListener(ViewPager viewPager, BottomNavigationViewInner bnve, boolean smoothScroll, OnItemSelectedListener listener) {
             this.viewPagerRef = new WeakReference<>(viewPager);
             this.listener = listener;
             this.smoothScroll = smoothScroll;
@@ -946,7 +941,7 @@ public class BottomNavigationViewInner extends BottomNavigationView {
             }
         }
 
-        public void setOnNavigationItemSelectedListener(OnNavigationItemSelectedListener listener) {
+        public void setOnNavigationItemSelectedListener(OnItemSelectedListener listener) {
             this.listener = listener;
         }
 

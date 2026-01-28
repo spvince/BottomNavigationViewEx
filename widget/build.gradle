@@ -1,19 +1,18 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
-
-group = 'com.github.ittianyu'
+apply plugin: 'maven-publish'
 
 android {
+    namespace 'com.github.ittianyu.widget'
+
     compileSdkVersion rootProject.compileSdkVersion
-    buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 21
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 25
-        versionName "2.0.5"
+        versionCode 28
+        versionName "2.0.8"
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -33,35 +32,44 @@ dependencies {
 
     // TEST
     androidTestImplementation "androidx.test:runner:$rootProject.testRunner"
-    androidTestImplementation "androidx.test.espresso:espresso-core:$rootProject.testRunner"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.7.0"
     androidTestImplementation "androidx.test.ext:junit:$rootProject.junit"
 }
 
 // 指定编码
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
 }
 
 // 打包源码
-task sourcesJar(type: Jar) {
+tasks.register('sourcesJar', Jar) {
     from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
+    archiveClassifier.set('sources')
 }
 
-task javadoc(type: Javadoc) {
-    failOnError false
-    source = android.sourceSets.main.java.sourceFiles
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    classpath += configurations.compile
-}
+// Publier la library avec maven-publish
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId = project.group
+                artifactId = project.name
+                version = android.defaultConfig.versionName
 
-// 制作文档(Javadoc)
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
+                // Artefacts
+                artifact("$buildDir/outputs/aar/${project.name}-release.aar")
+                artifact(sourcesJar) {
+                    classifier = 'sources'
+                }
+            }
+        }
 
-artifacts {
-    archives sourcesJar
-    archives javadocJar
+        repositories {
+            // Définir ton dépôt de publication local ou distant
+            maven {
+                name = "localBuild"
+                url = uri("${buildDir}/repo")
+            }
+        }
+    }
 }

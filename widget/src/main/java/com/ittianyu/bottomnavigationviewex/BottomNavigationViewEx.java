@@ -1,5 +1,6 @@
 package com.ittianyu.bottomnavigationviewex;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Typeface;
@@ -13,8 +14,9 @@ import androidx.viewpager.widget.ViewPager;
 import com.google.android.material.bottomnavigation.BottomNavigationItemView;
 import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationBarItemView;
+import com.google.android.material.navigation.NavigationBarMenuItemView;
 
+@SuppressLint("RestrictedApi")
 public class BottomNavigationViewEx extends BottomNavigationViewInner {
 
     public BottomNavigationViewEx(Context context) {
@@ -102,7 +104,7 @@ public class BottomNavigationViewEx extends BottomNavigationViewInner {
     }
 
     @Override
-    public BottomNavigationView.OnNavigationItemSelectedListener getOnNavigationItemSelectedListener() {
+    public BottomNavigationView.OnItemSelectedListener getOnNavigationItemSelectedListener() {
         try {
             return super.getOnNavigationItemSelectedListener();
         } catch (Exception e) {
@@ -111,9 +113,9 @@ public class BottomNavigationViewEx extends BottomNavigationViewInner {
     }
 
     @Override
-    public void setOnNavigationItemSelectedListener(BottomNavigationView.OnNavigationItemSelectedListener listener) {
+    public void setOnItemSelectedListener(BottomNavigationView.OnItemSelectedListener listener) {
         try {
-            super.setOnNavigationItemSelectedListener(listener);
+            super.setOnItemSelectedListener(listener);
         } catch (Exception e) {
         }
     }
@@ -133,7 +135,7 @@ public class BottomNavigationViewEx extends BottomNavigationViewInner {
     }
 
     @Override
-    public NavigationBarItemView[] getBottomNavigationItemViews() {
+    public NavigationBarMenuItemView[] getBottomNavigationItemViews() {
         try {
             return super.getBottomNavigationItemViews();
         } catch (Exception e) {
